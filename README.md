@@ -71,3 +71,110 @@ Tested on a benchmark dataset of music tracks evaluated under realistic transmis
                                                             │
                                                             ▼
                                                  [ Recovered QR Code ]
+```
+
+---
+
+## 💻 Quickstart
+
+### Prerequisites
+* Python 3.10+ (tested on Python 3.12)
+* [FFmpeg](https://ffmpeg.org/) installed and added to system `PATH`
+* NVIDIA GPU with CUDA support (recommended)
+
+### Installation
+```bash
+# Clone the repository
+git clone https://github.com/hadala-p/mp3-qr-steganography.git
+cd mp3-qr-steganography
+
+# Create and activate virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### Embedding & Extracting
+```bash
+# 1. Embed QR code into an audio file
+python -m src.embed --audio "data/samples/input.mp3" \
+                    --qr "data/samples/target_qr.png" \
+                    --output "output/stego.mp3"
+
+# 2. Extract QR code from the stego audio
+python -m src.extract --audio "output/stego.mp3" \
+                      --output "output/recovered_qr.png"
+```
+
+---
+
+## 📁 Repository Structure
+
+```text
+mp3-qr-steganography/
+├── instrukcja.md
+├── README.md
+├── requirements.txt
+├── mp3_do_ukrycia/
+├── mp3_stego/
+├── odkodowane_qr/
+├── qr_do_ukrycia/
+│   ├── STEGANOGRAFIA.png
+│   ├── TAJNYTEXT.png
+│   └── TRUDNYTEXT.png
+├── qrstego/
+│   ├── __init__.py
+│   ├── config.py
+│   ├── constants.py
+│   ├── audio/
+│   │   ├── __init__.py
+│   │   ├── ffmpeg_io.py
+│   │   └── mp3_tools.py
+│   ├── model/
+│   │   ├── __init__.py
+│   │   ├── masks.py
+│   │   └── net.py
+│   ├── qr/
+│   │   ├── __init__.py
+│   │   └── qr_codec.py
+│   ├── stego/
+│   │   ├── __init__.py
+│   │   └── trainer.py
+│   └── utils/
+│       ├── __init__.py
+│       └── metrics.py
+└── script/
+    ├── __init__.py
+    ├── constants.py
+    ├── embed.py
+    ├── extract.py
+    ├── train.py
+    └── modele/
+        ├── decoder.pt
+        └── encoder.pt
+```
+
+---
+
+## 🔬 Citation
+
+If you use this work, codebase, or results in your research, please cite:
+
+```bibtex
+@mastersthesis{hadala2026steganography,
+  author       = {Piotr Hadała},
+  title        = {Badanie algorytmów sztucznej inteligencji do steganograficznej ochrony danych w plikach audio (Investigation of Artificial Intelligence Algorithms for Steganographic Data Protection in Audio Files)},
+  school       = {Uniwersytet Komisji Edukacji Narodowej w Krakowie (UKEN), Instytut Bezpieczeństwa i Informatyki},
+  year         = {2026},
+  address      = {Kraków, Poland},
+  note         = {Supervised by dr hab. prof. UKEN Serhii Semenov}
+}
+```
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
