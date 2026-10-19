@@ -1,2 +1,73 @@
-# mp3-qr-steganography
-Cross-modal deep audio steganography system for imperceptibly hiding QR codes in MP3 music files using PyTorch and Straight-Through Estimator (STE)
+# MP3-QR-Steganography
+
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.x-ee4c2c.svg)](https://pytorch.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+> **Deep learning-based cross-modal audio steganography system designed to embed structured QR codes into MP3 audio tracks with high acoustic transparency and resilience against lossy compression.**
+
+---
+
+## 📌 Overview
+
+Traditional audio steganography methods (such as Least Significant Bit – LSB) fail catastrophically when subjected to lossy perceptual compression like MP3. Non-linear psychoacoustic quantization and encoder delays completely wipe out uncompressed time-domain bit modifications.
+
+**MP3-QR-Steganography** addresses this limitation by training an end-to-end convolutional encoder-decoder pipeline directly against real MP3 compression. By utilizing the **Straight-Through Estimator (STE)**, non-differentiable MP3 encoding/decoding is integrated into the backpropagation training loop, forcing the model to embed perturbations into the most resilient, high-energy acoustic components.
+
+Trained on a curated large-scale dataset of nearly **40,000 music tracks** from the [Free Music Archive (FMA)](https://github.com/mdeff/fma), the model acts as a universal steganographic key, generalising to previously unseen audio files.
+
+---
+
+## 🚀 Key Features
+
+* **STE Gradient Approximation:** Uses Straight-Through Estimation (`x_diff = x_stego + (x_mp3 - x_stego).detach()`) to allow gradient propagation through non-differentiable MP3 codecs during training.
+* **Psychoacoustic Energy Masking:** Dynamic amplitude adaptation scales embedding strength relative to the local signal energy envelope ($E_{local}$), keeping perturbations acoustically imperceptible.
+* **Temporal Synchronization ("Radar"):** Compensates for MP3 encoder delay and padding via sliding-window cross-correlation against the structural finder patterns of the QR code.
+* **Triple Embedding & Soft Voting:** Embeds identical QR payload replicas into the three loudest audio segments; extracted continuous logits are averaged prior to thresholding to mitigate localized artifacts.
+* **QR Template & Geometric Correction:** Leverages standardized structural features (finder patterns, timing patterns, format info) combined with Reed-Solomon error correction for deterministic error recovery.
+* **Zero Payload Size Footprint:** Stego audio introduces 0 additional bytes to the compressed audio stream compared to standard re-encoded baseline MP3 files.
+
+---
+
+## 📊 Experimental Results
+
+Tested on a benchmark dataset of music tracks evaluated under realistic transmission conditions:
+
+| Metric / Scenario | Proposed Deep Stego System | Classical LSB Method |
+| :--- | :---: | :---: |
+| **MP3 Compression (320 kbps)** | **100.0% Success** (0.00 BER) | **0.0% Success** (190.9 avg bit errors) |
+| **Streaming Bitrate (128 kbps)** | **94.0% Success** (1.29 avg bit errors) | 0.0% Success |
+| **Aggressive Bitrate (64 kbps)** | **55.0% Success** (8.84 avg bit errors) | 0.0% Success |
+| **Audio Cropping (6 sec removed)** | **70.0% – 83.0% Success** | 0.0% (Desynchronization) |
+| **Additive Noise (SNR 20 dB)** | **89.0% Success** | 0.0% |
+| **Acoustic Transparency (SNR)** | **27.01 dB average** (min > 20 dB) | N/A |
+| **Acoustic Transparency (PSNR)**| **41.34 dB average** (peak 60.97 dB) | N/A |
+
+---
+
+## 🛠️ System Architecture
+
+```text
+       [ Cover MP3 ] ──> FFmpeg PCM (44.1kHz) ──┐
+                                                │
+[ QR Code (21x21) ] ─> Flatten Tensor [441] ─> [ CNN Encoder ] ──> Psychoacoustic Masking
+                                                                           │
+                                                                  [ Stego Audio PCM ]
+                                                                           │
+                                                            ┌──────────────┴──────────────┐
+                                                       Forward Pass                  Backward Pass
+                                                    (Real MP3 Codec)              (Identity Bypass - STE)
+                                                            │                                     ▲
+                                                            ▼                                     │
+                                                  [ MP3 Re-encoded Signal ] ──────────────────────┘
+                                                            │
+                                                     [ CNN Decoder ]
+                                                            │
+                                            Temporal Radar Synchronization
+                                                            │
+                                            Soft Voting (Triple Embedding)
+                                                            │
+                                             Geometric Template Correction
+                                                            │
+                                                            ▼
+                                                 [ Recovered QR Code ]
