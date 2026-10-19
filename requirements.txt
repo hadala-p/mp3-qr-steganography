@@ -1,0 +1,9 @@
+# Główne biblioteki do uczenia maszynowego i przetwarzania dźwięku
+torch==2.5.1
+torchaudio==2.5.1
+soundfile==0.14.0
+numpy==2.5.3
+opencv-python==5.0.0.93
+pillow==12.3.0
+pyzbar==0.1.9
+pydub==0.25.1
